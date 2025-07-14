@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stay in Cloud: Main Page</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
+        <h1>Stay-in-Cloud: Main Page</h1>
+        <br><br>
+        <div class="media-upload-section">
+            <h2>Upload Media</h2>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <label for="mediaFile">Select media to upload:</label>
+                <input type="file" id="mediaFile" name="mediaFile" 
+                    accept=".pdf,.jpg,.jpeg,.png,.mp3,.mp4,.doc,.docx,.odt,.xls,.xlsx,.db,.ppt,.pptx">
+                <button type="submit">Upload</button>
+            </form>
+            <div id="media-preview">
+                <!-- Uploaded media preview will appear here -->
+            </div>
+        </div>
+    </body>
+</html>

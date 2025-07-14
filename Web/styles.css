@@ -1,0 +1,40 @@
+h1 {
+    color:darkturquoise;
+    background-color: azure;
+    text-align:center;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+    font-size: 30px;
+    border: 2px solid darkturquoise;
+    border-radius: 5px;    
+}
+body {
+    font-family:Georgia, 'Times New Roman', Times, serif;
+    margin:0;
+    padding:20px;
+}
+nav {
+    background-color: lightgoldenrodyellow;
+    text-align: center;
+    vertical-align:middle;
+}
+nav ul li {
+    margin: 15px;
+    justify-content: center;
+    display: inline-block    
+}
+button:hover {
+    cursor: pointer;
+    background-color: darkseagreen;
+    color: white;
+    transition: background-color 0.3s, color 0.3s;
+}
+img {
+    position:fixed; 
+    top:0; 
+    left:0; 
+    width:100vw; 
+    height:100vh; 
+    object-fit:cover; 
+    z-index:-1;
+    opacity: 30%;
+}

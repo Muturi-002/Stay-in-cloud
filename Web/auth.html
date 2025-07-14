@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stay in Cloud: Authentication</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
+        <h1>Stay-In-Cloud Authentication</h1>
+        <button onclick="window.location.href='home.html'">Back to Homepage</button>
+        <div id="Login">
+            <form method="post">
+                <h2>Existing User? Login Here</h2>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                <br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <br>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+        <div id="Register">
+            <h2>New User? Register Here</h2>
+            <form method="post" action="register.html">
+                <label for="new_username">Username:</label>
+                <input type="text" id="new_username" name="new_username" required>
+                <br>
+                <label for="new_password">Password:</label>
+                <input type="password" id="new_password" name="new_password" required>
+                <br>
+                <button type="submit">Register</button>
+            </form>
+    </body>
+    <script>
+        // JavaScript for form validation or other functionalities can be added here
+        document.querySelector('form').addEventListener('submit', function(event) {
+            // Example validation logic
+            const username = document.getElementById('Username').value;
+            const password = document.getElementById('Password').value;
+            if (username === '' || password === '') {
+                event.preventDefault();
+                alert('Please fill in all fields.');
+            }
+        });
+        document.querySelector('#Login').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // You can add authentication logic here if needed
+            window.location.href = 'main.html';
+        });
+
+        document.querySelector('#Register').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // You can add registration logic here if needed
+            location.reload();
+        });
+    </script>
+</html>
