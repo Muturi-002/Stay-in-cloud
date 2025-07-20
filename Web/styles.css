@@ -6,6 +6,8 @@ h1 {
     font-size: 30px;
     border: 2px solid darkturquoise;
     border-radius: 5px;    
+    padding: 10px;
+    margin: 20px;
 }
 body {
     font-family:Georgia, 'Times New Roman', Times, serif;
@@ -24,7 +26,7 @@ nav ul li {
 }
 button:hover {
     cursor: pointer;
-    background-color: darkseagreen;
+    background-color:dimgray;
     color: white;
     transition: background-color 0.3s, color 0.3s;
 }
@@ -37,4 +39,37 @@ img {
     object-fit:cover; 
     z-index:-1;
     opacity: 30%;
+}
+form, #Register, #Login {
+    display: flex;
+    flex-direction:column;
+    gap: 3px;
+    align-items:center;   
+}
+label {
+    font-weight: bold;
+    color: darkslategrey;
+    padding: 10px;
+    margin-right: 10px;
+}
+#Register, #Login {
+    border:3px solid darkslategrey;
+    border-radius: 10px;
+    margin: 20px;
+    padding: 20px;
+}
+.media-upload-section {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    border: 5px dashed lightgrey;
+    padding: 20px;
+    border-radius: 10px;
+}
+.user-info {
+    font-size: 24px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-style:oblique;
+    padding: 10px;
+    text-align: right;;
 }

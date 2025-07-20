@@ -10,12 +10,13 @@
         <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
         <h1>Stay-In-Cloud Authentication</h1>
         <button onclick="window.location.href='home.html'">Back to Homepage</button>
+        <button onclick="window.location.href='account-config.html'">Edit Profile</button>
         <div id="Login">
             <form method="post">
                 <h2>Existing User? Login Here</h2>
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
-                <br>
+                <br><br>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
                 <br>
@@ -23,38 +24,70 @@
             </form>
         </div>
         <div id="Register">
-            <h2>New User? Register Here</h2>
-            <form method="post" action="register.html">
+            <form method="post" >
+                <h2>New User? Register Here</h2>
                 <label for="new_username">Username:</label>
                 <input type="text" id="new_username" name="new_username" required>
                 <br>
                 <label for="new_password">Password:</label>
                 <input type="password" id="new_password" name="new_password" required>
-                <br>
+                <br><br>
+                <label for="tenancy_ocid">Tenancy OCID:</label>
+                <input type="text" id="tenancy_ocid" name="tenancy_ocid" required><br>
+                <label for="user_ocid">User OCID:</label>
+                <input type="text" id="user_ocid" name="user_ocid" required><br>
+                <label for ="comp_ocid">Compartment OCID:</label>
+                <input type="text" id="comp_ocid" name="comp_ocid" required><br>
                 <button type="submit">Register</button>
             </form>
     </body>
     <script>
-        // JavaScript for form validation or other functionalities can be added here
-        document.querySelector('form').addEventListener('submit', function(event) {
-            // Example validation logic
-            const username = document.getElementById('Username').value;
-            const password = document.getElementById('Password').value;
-            if (username === '' || password === '') {
-                event.preventDefault();
-                alert('Please fill in all fields.');
-            }
-        });
-        document.querySelector('#Login').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // You can add authentication logic here if needed
-            window.location.href = 'main.html';
-        });
+    // Redirect to main.html after successful login or signup
 
-        document.querySelector('#Register').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // You can add registration logic here if needed
-            location.reload();
-        });
+    // Handle login form submission
+    document.querySelector('#Login form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        // Example validation logic
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (username === '' || password === '') {
+            alert('Please fill in all fields.');
+            return;
+        }
+        // Here you would typically validate credentials with a backend
+        // For demonstration, we assume login is always successful
+        window.location.href = 'main.html';
+    });
+
+    // Handle registration form submission
+    document.querySelector('#Register form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        // Example validation logic
+        const newUsername = document.getElementById('new_username').value;
+        const newPassword = document.getElementById('new_password').value;
+        const tenancyOcid = document.getElementById('tenancy_ocid').value;
+        const userOcid = document.getElementById('user_ocid').value;
+        const compOcid = document.getElementById('comp_ocid').value;
+        if (
+            newUsername === '' ||
+            newPassword === '' ||
+            tenancyOcid === '' ||
+            userOcid === '' ||
+            compOcid === ''
+        ) {
+            alert('Please fill in all fields.');
+            return;
+        }
+        // Here you would typically process registration with a backend
+        // For demonstration, we assume registration is always successful
+        window.location.href = 'main.html';
+    });
+
+    /**
+     * Documentation:
+     * - When an existing user submits the login form, the page validates input and redirects to main.html.
+     * - When a new user submits the registration form, the page validates input and redirects to main.html.
+     * - In a real application, you should replace the placeholder logic with actual authentication and registration checks.
+     */
     </script>
 </html>

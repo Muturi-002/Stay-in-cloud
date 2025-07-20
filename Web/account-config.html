@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stay in Cloud: Authentication</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
+        <h1>Stay-In-Cloud Account Settings</h1>
+        <button onclick="window.location.href='home.html'">Back to Homepage</button>
+        <button onclick="window.location.href='auth.html'">Back to Media Upload</button>
+
+        <div id="AccountConfig">
+            <form method="post" onsubmit="updateAccountSettings(event)">
+                <h2>Update Account Settings for <span id="username"></span></h2>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password">
+                <br><br>
+                <label for="tenancy_ocid">Tenancy OCID:</label>
+                <input type="text" id="tenancy_ocid" name="tenancy_ocid">
+                <br><br>
+                <label for="compartment_ocid">Compartment OCID:</label>
+                <input type="text" id="compartment_ocid" name="compartment_ocid">
+                <br><br>
+                <label for="user_ocid">User OCID:</label>
+                <input type="text" id="user_ocid" name="user_ocid">
+                <br><br>
+                <button type="submit">Update Settings</button>
+            </form>
+        </div>
+        <script>
+            // Dummy code simulating database retrieval
+            // In a real application, replace this with an AJAX call or fetch to your backend
+            const dummyUserData = {
+                username: 'JohnDoe',
+                password: 'dummyPassword',
+                tenancy_ocid: 'ocid1.tenancy.oc1..dummy',
+                compartment_ocid: 'ocid1.compartment.oc1..dummy',
+                user_ocid: 'ocid1.user.oc1..dummy'
+            };
+
+            function populateAccountSettings() {
+                document.getElementById('username').textContent = dummyUserData.username;
+                document.getElementById('password').value = dummyUserData.password;
+                document.getElementById('tenancy_ocid').value = dummyUserData.tenancy_ocid;
+                document.getElementById('compartment_ocid').value = dummyUserData.compartment_ocid;
+                document.getElementById('user_ocid').value = dummyUserData.user_ocid;
+            }
+
+            function updateAccountSettings(event) {
+                event.preventDefault();
+                // Gather updated values
+                const updatedData = {
+                    password: document.getElementById('password').value,
+                    tenancy_ocid: document.getElementById('tenancy_ocid').value,
+                    compartment_ocid: document.getElementById('compartment_ocid').value,
+                    user_ocid: document.getElementById('user_ocid').value
+                };
+                // Simulate database update (replace with real AJAX/fetch in production)
+                console.log('Updating database with:', updatedData);
+                alert('Account settings updated!');
+                // Example for real backend:
+                // fetch('/api/update-account', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(updatedData)
+                // }).then(response => response.json())
+                //   .then(data => alert('Account settings updated!'))
+                //   .catch(error => alert('Update failed!'));
+            }
+
+            // Populate form fields on page load
+            window.onload = populateAccountSettings;
+        </script>
+    </body>
+</html>
