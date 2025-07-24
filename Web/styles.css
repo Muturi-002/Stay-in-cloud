@@ -40,7 +40,7 @@ img {
     z-index:-1;
     opacity: 30%;
 }
-form, #Register, #Login {
+form, #Login {
     display: flex;
     flex-direction:column;
     gap: 3px;
@@ -52,7 +52,7 @@ label {
     padding: 10px;
     margin-right: 10px;
 }
-#Register, #Login {
+#Login {
     border:3px solid darkslategrey;
     border-radius: 10px;
     margin: 20px;
@@ -65,11 +65,4 @@ label {
     border: 5px dashed lightgrey;
     padding: 20px;
     border-radius: 10px;
-}
-.user-info {
-    font-size: 24px;
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-style:oblique;
-    padding: 10px;
-    text-align: right;;
 }
