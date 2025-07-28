@@ -40,7 +40,7 @@ img {
     z-index:-1;
     opacity: 30%;
 }
-form, #Login {
+form {
     display: flex;
     flex-direction:column;
     gap: 3px;
@@ -52,12 +52,7 @@ label {
     padding: 10px;
     margin-right: 10px;
 }
-#Login {
-    border:3px solid darkslategrey;
-    border-radius: 10px;
-    margin: 20px;
-    padding: 20px;
-}
+
 .media-upload-section {
     display:flex;
     flex-direction: column;
@@ -65,4 +60,25 @@ label {
     border: 5px dashed lightgrey;
     padding: 20px;
     border-radius: 10px;
+}
+#retrieve-media {
+    margin: 20px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: first baseline;
+    border: 5px dashed lightslategray;
+    padding: 30px;
+    border-radius: 10px;
+}
+.media-download-section {
+    justify-content: right;
+}
+.list-media-in-storage {
+    justify-content: left;
+}
+.user-info {
+    justify-content: right;
+    font-size: 20px;
+    color: darkslategrey;
+    margin: 5px;
 }

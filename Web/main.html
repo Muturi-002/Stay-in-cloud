@@ -8,10 +8,9 @@
     </head>
     <body>
         <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
-        <h1>Stay-in-Cloud: Main Page</h1>
+        <h1>Stay-in-Cloud: Media Page</h1>
         <br>
         <button onclick="window.location.href='home.html'">Back to Homepage</button>
-        <button onclick="window.location.href='auth.html'">Back to Authentication</button>
         <div class="user-info">
             <strong>Logged in as:</strong> <span id="username"></span>
         </div>
@@ -29,7 +28,101 @@
                 <!-- Uploaded media preview will appear here -->
             </div>
         </div>
+        <div id="retrieve-media">
+            <div class="list-media-in-storage">
+                <h2>Media in OS bucket</h2>
+                <ul id="mediaList">
+                    <!-- List of media files will be populated here -->
+                </ul>
+            </div>
+            <div class="media-download-section">
+                <h2>Download Media</h2>
+                <form id="downloadForm"></form>
+                <label for="mediaFileName">Enter media file name to download:</label>
+                <input type="text" id="mediaFileName" name="mediaFileName" required>
+                <br><br>
+                <button type="submit">Download</button>
+                </form>
+                <div id="download-status"></div>
+            </div>
+        </div>
         <script>
+            document.getElementById('downloadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileName = document.getElementById('mediaFileName').value;
+            const statusDiv = document.getElementById('download-status');
+            statusDiv.textContent = 'Downloading...';
+
+            try {
+                // Example: Replace with your actual external source URL
+                const response = await fetch(`https://your-external-source.com/files/${encodeURIComponent(fileName)}`);
+                if (!response.ok) {
+                throw new Error('File not found or download failed.');
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                statusDiv.textContent = 'Download started!';
+            } catch (error) {
+                statusDiv.textContent = error.message;
+            }
+            });
+        </script>
+        <script>
+                document.getElementById('mediaFile').addEventListener('change', function(event) {
+                    const preview = document.getElementById('media-preview');
+                    preview.innerHTML = '';
+                    preview.style.display = 'flex';
+                    preview.style.flexDirection = 'column';
+                    preview.style.alignItems = 'center';
+                    preview.style.justifyContent = 'center';
+                    preview.style.marginTop = '20px';
+        
+                    const file = event.target.files[0];
+                    if (!file) return;
+        
+                    const fileType = file.type;
+                    const reader = new FileReader();
+        
+                    reader.onload = function(e) {
+                        if (fileType.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.maxWidth = '300px';
+                            img.style.maxHeight = '300px';
+                            img.style.display = 'block';
+                            preview.appendChild(img);
+                        } else if (fileType.startsWith('audio/')) {
+                            const audio = document.createElement('audio');
+                            audio.controls = true;
+                            audio.src = e.target.result;
+                            audio.style.display = 'block';
+                            preview.appendChild(audio);
+                        } else if (fileType.startsWith('video/')) {
+                            const video = document.createElement('video');
+                            video.controls = true;
+                            video.src = e.target.result;
+                            video.style.maxWidth = '300px';
+                            video.style.display = 'block';
+                            preview.appendChild(video);
+                        } else {
+                            const info = document.createElement('p');
+                            info.textContent = `Selected file: ${file.name}`;
+                            info.style.textAlign = 'center';
+                            preview.appendChild(info);
+                        }
+                    };
+        
+                    reader.readAsDataURL(file);
+                });
                 // Dummy code simulating database retrieval
                 // In a real application, replace this with an AJAX call or fetch to your backend
                 const dummyUserData = {
