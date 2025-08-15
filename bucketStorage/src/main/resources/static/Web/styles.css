@@ -72,6 +72,7 @@ label {
 }
 .media-download-section {
     justify-content: right;
+    align-items: center;
 }
 .list-media-in-storage {
     justify-content: left;

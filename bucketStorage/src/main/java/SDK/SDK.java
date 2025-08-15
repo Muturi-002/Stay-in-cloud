@@ -66,20 +66,6 @@ public class SDK {
         }
     }
 
-    private static void putObjects(){
-        // Add objects/media to the bucket specified
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
-                .bucketName(bucketName)
-                .objectName("slim.txt") // Name of the object to be created
-                .putObjectBody(new java.io.ByteArrayInputStream("Sample content".getBytes())) // Provide content for the object
-                .build();
-        PutObjectResponse response = client.putObject(putObjectRequest); //Always include this variable instance of class 'PutObjectResponse'. Ensures object is put successfully.
-        System.out.println("Upload succeeded, ETag: " + response.getETag());
-        System.out.println("Object '" + putObjectRequest.getObjectName() + "' has been created in bucket '" + bucketName + "'.");
-
-        listObjects();
-    }
 
     private static void listObjects() {
         System.out.print("Listing objects in bucket '" + bucketName + "' --->:\n");
@@ -130,7 +116,7 @@ public class SDK {
 
         //Create Bucket "BucketStore-1" if not exists
         setBucket();
-        putObjects();
-        deleteObjects();
+//        putObjects();
+//        deleteObjects();
     }
 }

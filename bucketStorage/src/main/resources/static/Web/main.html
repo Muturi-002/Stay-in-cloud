@@ -37,10 +37,13 @@
             </div>
             <div class="media-download-section">
                 <h2>Download Media</h2>
-                <form id="downloadForm"></form>
-                <label for="mediaFileName">Enter media file name to download:</label>
-                <input type="text" id="mediaFileName" name="mediaFileName" required>
-                <br><br>
+                <form id="downloadForm">
+                    <label for="mediaFileName">Select media file to download:</label>
+                    <select id="mediaFileName" name="mediaFileName" required>
+                        <option value="" disabled selected>Select a file</option>
+                        <!-- Add more options dynamically as needed -->
+                    </select>
+                    <br><br>
                 <button type="submit">Download</button>
                 </form>
                 <div id="download-status"></div>
