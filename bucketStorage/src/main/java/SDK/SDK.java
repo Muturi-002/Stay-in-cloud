@@ -3,21 +3,27 @@ package SDK;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.objectstorage.ObjectStorageClient;
 import com.oracle.bmc.objectstorage.model.CreateBucketDetails;
+import com.oracle.bmc.objectstorage.model.ObjectSummary;
 import com.oracle.bmc.objectstorage.requests.*;
 import com.oracle.bmc.objectstorage.responses.CreateBucketResponse;
 import com.oracle.bmc.objectstorage.responses.ListBucketsResponse;
 import com.oracle.bmc.objectstorage.responses.ListObjectsResponse;
 import com.oracle.bmc.objectstorage.responses.PutObjectResponse;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
+@RestController
 public class SDK {
+    //Setting the variables above as static allows them to be used in the SDK classes.
     static String bucketName = "BucketStore-1";
     static ConfigFileAuthenticationDetailsProvider provider;
     static ObjectStorageClient client;
     static ListObjectsResponse osResponse;
-    //Setting the variables above as static allows them to be used in the SDK classes.
 
+    @PutMapping("/api/setBucket")
     private static void setBucket() throws IOException{
         String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
         try {
@@ -62,29 +68,35 @@ public class SDK {
                 System.out.println("Created On: " + bucket.getTimeCreated());
                 System.out.println("-----------------------------");
             }
-
         }
     }
 
-
-    private static void listObjects() {
-        System.out.print("Listing objects in bucket '" + bucketName + "' --->:\n");
+    @PostMapping("/api/upload")
+    public String uploadMedia(@RequestParam("file") MultipartFile file) throws IOException {
+        setBucket();
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
+                .bucketName(bucketName)
+                .objectName(file.getOriginalFilename()) // Name of the object to be created
+                .putObjectBody(file.getInputStream()) // Provide content for the object
+                .build();
+        PutObjectResponse response = client.putObject(putObjectRequest);
+        listObjects();
+        return "Upload succeeded, ETag: " + response.getETag() +"\n Object name: " + file.getOriginalFilename();
+    }
+    @GetMapping("/api/listmedia")
+    private List<String> listObjects() throws IOException {
+        setBucket();
         String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
         ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
                 .namespaceName(namespace)
                 .bucketName(bucketName)
                 .build();
         osResponse = client.listObjects(listObjectsRequest);
-        if (osResponse.getListObjects().getObjects().isEmpty()) {
-            System.out.println("No objects found in the bucket.");
-        } else {
-            for (var object : osResponse.getListObjects().getObjects()) {
-                System.out.println("Object Name: " + object.getName());
-                System.out.println("Size: " + object.getSize() + " bytes");
-                System.out.println("Last Modified: " + object.getTimeCreated());
-                System.out.println("-----------------------------");
-            }
-        }
+        return osResponse.getListObjects().getObjects()
+                .stream()
+                .map(ObjectSummary::getName)
+                .toList();
     }
 
     private static void deleteObjects(){
@@ -100,7 +112,6 @@ public class SDK {
                     .build();
             client.deleteObject(deleteObjectRequest);
             System.out.println("Object '" + objectName + "' has been deleted from bucket '" + bucketName + "'.");
-            listObjects();
         }else {
             System.out.println("Object '" + objectName + "' does not exist in bucket '" + bucketName + "'.");
         }
