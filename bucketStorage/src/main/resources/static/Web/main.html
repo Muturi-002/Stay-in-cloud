@@ -11,9 +11,9 @@
         <h1>Stay-in-Cloud: Media Page</h1>
         <br>
         <button onclick="window.location.href='home.html'">Back to Homepage</button>
-        <div class="user-info">
-            <strong>Username:</strong> <span id="username"></span>
-        </div>
+        <br><br>
+        <br>
+        <button onclick="bucketInit()">Initialize Bucket</button>
         <br><br>
         <div class="media-upload-section">
             <h2>Upload Media</h2>
@@ -51,37 +51,98 @@
             </div>
         </div>
         <script>
-            try {
-                // Checking bucket availability
-                async function initBucket() {
-                    try {
-                        const res = await fetch("/api/setBucket", { method: "PUT" });
-                        const message = await res.text();
-                        console.log(message);
-                        document.getElementById("bucket-status").textContent = message;
-                    } catch (err) {
-                        console.error("Error initializing bucket:", err);
-                    }
+            // Initialize Bucket
+            async function bucketInit() {
+                try {
+                    const res = await fetch("/api/bucketInit");
+                    const data = await res.json();
+                    console.log("Bucket initialized:", data);
+                } catch (err) {
+                    console.error("Error initializing bucket:", err);
                 }
-                document.addEventListener("DOMContentLoaded", initBucket);
-                //Listing Available objects
-                const res = await fetch("/api/listmedia");
-                if (!res.ok) throw new Error("Failed to fetch file list");
-                const files = await res.json();
-
-                const list = document.getElementById("mediaList");
-                list.innerHTML = ""; // Clear current list
-                files.forEach(file => {
-                    const li = document.createElement("li");
-                    li.textContent = file;
-                    list.appendChild(li);
-                });
-            } catch (err) {
-                console.error(err);
             }
 
+            //Listing Available objects
+            async function loadMediaList() {
+                try {
+                    const res = await fetch("/api/listmedia");
+                    if (!res.ok) throw new Error("Failed to fetch file list");
+                    const files = await res.json();
+
+                    const list = document.getElementById("mediaList");
+                    const dropdown = document.getElementById("mediaFileName");
+                    
+                    files.forEach(file => {
+                        // Populate unordered list
+                        const li = document.createElement("li");
+                        li.textContent = file;
+                        list.appendChild(li);
+
+                        // Populate dropdown for downloading
+                        const option = document.createElement("option");
+                        option.value = file;
+                        option.textContent = file;
+                        dropdown.appendChild(option);
+                    });
+                } catch (err) {
+                    console.error("Error listing objects:", err);
+                    const list = document.getElementById("mediaList");
+                    list.innerHTML = "<li>Failed to load media list.</li>";
+                }
+            }
+            
+            // Providing PreAuthenticatedRequest (PAR)
+            async function providePAR() {
+                try {
+                    const res = await fetch("/api/bucketPAR", { method: "POST" });
+                    const data = await res.json();
+                    console.log("PreAuthenticatedRequest (PAR) provided:", data);
+                } catch (err) {
+                    console.error("Error providing PAR:", err);
+                }
+            }
+
+            // Handling file uploads
+            document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                const fileInput = document.getElementById('mediaFile');
+                const file = fileInput.files[0];
+                const uploadStatus = document.getElementById('upload-status');
+                
+                if (!file) {
+                    uploadStatus.textContent = "Please select a file to upload.";
+                    return;
+                }
+            
+                const formData = new FormData();
+                formData.append('file', file);
+            
+                try {
+                    // Corrected endpoint path to /api/upload
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+            
+                    if (response.ok) {
+                        const result = await response.text();
+                        uploadStatus.textContent = "Upload successful! " + result;
+                        loadMediaList();
+                    } else {
+                        throw new Error('Upload failed with status ' + response.status);
+                    }
+                } catch (error) {
+                    uploadStatus.textContent = "Upload failed: " + error.message;
+                    console.error('Upload error:', error);
+                }
+            });
+
             //list files before/after upload
-            document.addEventListener("DOMContentLoaded", loadMediaList);
+            document.addEventListener("DOMContentLoaded", () => {
+                bucketInit();
+                loadMediaList();
+            });
+        
         </script>
     </body>
 </html>
