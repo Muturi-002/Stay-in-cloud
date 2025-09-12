@@ -1,14 +1,22 @@
 package SDK;
 
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
+import com.oracle.bmc.model.BmcException;
 import com.oracle.bmc.objectstorage.ObjectStorageClient;
 import com.oracle.bmc.objectstorage.model.*;
 import com.oracle.bmc.objectstorage.requests.*;
 import com.oracle.bmc.objectstorage.responses.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,7 +25,7 @@ import java.util.*;
 @Component
 public class SDK implements CommandLineRunner {
     //Setting the variables above as static allows them to be used in the SDK classes.
-    static String bucketName = "BucketStore-1";
+    private static final String bucketName = "BucketStore-1";
     static ConfigFileAuthenticationDetailsProvider provider;
     static ObjectStorageClient client;
     static ListObjectsResponse osResponse;
@@ -41,30 +49,33 @@ public class SDK implements CommandLineRunner {
         setBucket();
     }
     @GetMapping("/api/bucketInit")
-    private static void setBucket() throws IOException{
+    public String setBucket() {
         String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
         try {
             client.getBucket(GetBucketRequest.builder()
-                    .namespaceName(namespace)  //get objectstorage namespace
+                    .namespaceName(namespace)
                     .bucketName(bucketName)
                     .build());
-            System.out.println("Bucket '" + bucketName + "' already exists.");
-        } catch (Exception e) {
-            // Bucket does not exist, create it
-            CreateBucketRequest bucketCreate= CreateBucketRequest.builder()
-                    .namespaceName(namespace)
-                    .createBucketDetails(CreateBucketDetails.builder()
-                            .name(bucketName)
-                            .compartmentId(provider.getTenantId())
-                            .build())
-                    .build();
-            CreateBucketResponse bucketResponse = client.createBucket(bucketCreate);
-            System.out.println("Bucket '" + bucketResponse.getBucket().getName() + "' is created and ready for use.");
+            return "Bucket already exists: " + bucketName;
+        } catch (BmcException e) {
+            if (e.getStatusCode() == 404) {
+                // Bucket doesn't exist, create it
+                CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
+                        .namespaceName(namespace)
+                        .createBucketDetails(CreateBucketDetails.builder()
+                                .name(bucketName)
+                                .compartmentId(provider.getTenantId())
+                                .build())
+                        .build();
+                client.createBucket(createBucketRequest);
+                return "Bucket created: " + bucketName;
+            } else {
+                return "Error checking/creating bucket: " + e.getMessage();
+            }
         }
-        listBuckets();
     }
 
-    private static void listBuckets(){
+    private void listBuckets(){
         String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder()
                 .namespaceName(namespace)
@@ -73,11 +84,7 @@ public class SDK implements CommandLineRunner {
         ListBucketsResponse response = client.listBuckets(listBucketsRequest);
         if (response.getItems().isEmpty()) {
             System.out.println("No buckets found in the compartment.");
-            try {
-                setBucket();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            setBucket();
         } else {
             System.out.println("Listing buckets in root compartment --->:");
             for (var bucket : response.getItems()) {
@@ -88,21 +95,31 @@ public class SDK implements CommandLineRunner {
         }
     }
 
-    @PostMapping("/upload")
-    public String uploadMedia(@RequestParam("file") MultipartFile file) throws IOException {
+    @PostMapping("/api/upload")
+    public String uploadFiles(@RequestParam("file") MultipartFile file) {
+        String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
+        
+        // Initialize bucket first
         setBucket();
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
+        
+        try {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .namespaceName(namespace)
                 .bucketName(bucketName)
-                .objectName(file.getOriginalFilename()) // Name of the object to be created
+                .objectName(file.getOriginalFilename()) // Use the file's original name as the object name
+                .contentLength(file.getSize()) // Set content length
                 .putObjectBody(file.getInputStream()) // Provide content for the object
                 .build();
-        PutObjectResponse response = client.putObject(putObjectRequest);
-        return "Upload succeeded, ETag: " + response.getETag() +"\n Object name: " + file.getOriginalFilename();
+
+            client.putObject(putObjectRequest);
+            return "File uploaded successfully: " + file.getOriginalFilename();
+        } catch (IOException e) {
+            return "Error uploading file: " + e.getMessage();
+        }
     }
 
-    @GetMapping("/listmedia")
-    private List<String> listObjects() throws IOException {
+    @GetMapping("/api/listmedia")
+    public List<String> listObjects(){
         setBucket();
         String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
         ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
@@ -153,8 +170,8 @@ public class SDK implements CommandLineRunner {
         CreatePreauthenticatedRequestResponse responsePAR= client.createPreauthenticatedRequest(createPARrequest);
     }
 
-    @GetMapping("/bucketpar")
-    private static String getPAR(){
+    @PostMapping("/api/bucketPAR")
+    public String getPAR(){
         ListPreauthenticatedRequestsRequest listPAR = ListPreauthenticatedRequestsRequest.builder()
                 .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
                 .bucketName(bucketName)
@@ -185,5 +202,29 @@ public class SDK implements CommandLineRunner {
         return mostRecentPAR.get().toString();
     }
 
+    @GetMapping("/api/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName) {
+        try {
+            String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
+            
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .namespaceName(namespace)
+                .bucketName(bucketName)
+                .objectName(fileName)
+                .build();
+            
+            GetObjectResponse response = client.getObject(getObjectRequest);
+            
+            InputStreamResource resource = new InputStreamResource(response.getInputStream());
+            
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+                
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 }

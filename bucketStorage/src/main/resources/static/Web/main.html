@@ -72,6 +72,13 @@
                     const list = document.getElementById("mediaList");
                     const dropdown = document.getElementById("mediaFileName");
                     
+                    // Clear existing content
+                    list.innerHTML = "";
+                    // Clear dropdown options except the first one
+                    while (dropdown.children.length > 1) {
+                        dropdown.removeChild(dropdown.lastChild);
+                    }
+                    
                     files.forEach(file => {
                         // Populate unordered list
                         const li = document.createElement("li");
@@ -134,6 +141,41 @@
                 } catch (error) {
                     uploadStatus.textContent = "Upload failed: " + error.message;
                     console.error('Upload error:', error);
+                }
+            });
+
+            // Handling file downloads
+            document.getElementById('downloadForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                const fileSelect = document.getElementById('mediaFileName');
+                const fileName = fileSelect.value;
+                const downloadStatus = document.getElementById('download-status');
+                
+                if (!fileName) {
+                    downloadStatus.textContent = "Please select a file to download.";
+                    return;
+                }
+            
+                try {
+                    const response = await fetch(`/api/download?fileName=${encodeURIComponent(fileName)}`);
+                    
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        downloadStatus.textContent = "Download started successfully!";
+                    } else {
+                        throw new Error('Download failed with status ' + response.status);
+                    }
+                } catch (error) {
+                    downloadStatus.textContent = "Download failed: " + error.message;
+                    console.error('Download error:', error);
                 }
             });
 

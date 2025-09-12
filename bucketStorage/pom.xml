@@ -13,22 +13,21 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>bucketStorage</name>
 	<description>Demo project for Spring Boot</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
 	<properties>
 		<java.version>23</java.version>
+		<oci.version>3.68.2</oci.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.oracle.oci.sdk</groupId>
+				<artifactId>oci-java-sdk-bom</artifactId>
+				<version>${oci.version}</version> <!-- Get version of OCI automatically from the host machine -->
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -44,26 +43,19 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- add OCI SDK dependencies -->
+		<!-- OCI SDK with BOM for consistent versions -->
 		<dependency>
 			<groupId>com.oracle.oci.sdk</groupId>
 			<artifactId>oci-java-sdk-objectstorage</artifactId>
-			<version>3.68.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.oci.sdk</groupId>
 			<artifactId>oci-java-sdk-identity</artifactId>
-			<version>3.68.2</version>
 		</dependency>
+		<!-- OCI SDK HTTP Client Provider -->
 		<dependency>
 			<groupId>com.oracle.oci.sdk</groupId>
-			<artifactId>oci-java-sdk-common-httpclient-jersey</artifactId>
-			<version>3.68.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.oracle.oci.sdk</groupId>
-			<artifactId>oci-java-sdk-common</artifactId>
-			<version>3.68.2</version>
+			<artifactId>oci-java-sdk-common-httpclient-jersey3</artifactId>
 		</dependency>
 	</dependencies>
 
