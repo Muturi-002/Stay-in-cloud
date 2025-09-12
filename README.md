@@ -47,7 +47,9 @@ This is my very first project using the SpringBoot framework.
 
 ## Project Design
 
-<insert image>
+![Architectural Structure](./OCI%20Object%20Storage%20SpringBoot.png)
+
+The project uses a Spring Boot backend to interact with Oracle Cloud Infrastructure (OCI) Object Storage. The web interface allows users to upload, retrieve, and manage media files stored in OCI buckets. All credentials and configuration are managed via the `.oci/config` file, ensuring secure access to cloud resources.
 
 ## Steps
 ### OCI
