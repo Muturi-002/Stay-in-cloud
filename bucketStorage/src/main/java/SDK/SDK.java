@@ -75,26 +75,6 @@ public class SDK implements CommandLineRunner {
         }
     }
 
-    private void listBuckets(){
-        String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
-        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder()
-                .namespaceName(namespace)
-                .compartmentId(provider.getTenantId())
-                .build();
-        ListBucketsResponse response = client.listBuckets(listBucketsRequest);
-        if (response.getItems().isEmpty()) {
-            System.out.println("No buckets found in the compartment.");
-            setBucket();
-        } else {
-            System.out.println("Listing buckets in root compartment --->:");
-            for (var bucket : response.getItems()) {
-                System.out.println("Bucket Name: " + bucket.getName());
-                System.out.println("Created On: " + bucket.getTimeCreated());
-                System.out.println("-----------------------------");
-            }
-        }
-    }
-
     @PostMapping("/api/upload")
     public String uploadFiles(@RequestParam("file") MultipartFile file) {
         String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
@@ -151,55 +131,78 @@ public class SDK implements CommandLineRunner {
         }
     }
 
-    private static void createPAR(){
-        calendar.add(Calendar.DATE,7);
-        expiryDate= calendar.getTime();
-        CreatePreauthenticatedRequestDetails createPAR= CreatePreauthenticatedRequestDetails.builder()
-                .name(bucketPAR)
-                .bucketListingAction(PreauthenticatedRequest.BucketListingAction.ListObjects)
-                .accessType(CreatePreauthenticatedRequestDetails.AccessType.AnyObjectReadWrite)
-                .timeExpires(expiryDate)
-                .build();
+    // Create a PAR for a specific file
+    @PostMapping("/api/createFilePAR")
+    public String createFilePAR(@RequestParam("fileName") String fileName) {
+        try {
+            Calendar fileCalendar = Calendar.getInstance();
+            fileCalendar.add(Calendar.HOUR, 1); // File PARs expire in 1 hour for security
+            Date fileExpiryDate = fileCalendar.getTime();
+            
+            String filePARName = fileName + "_PAR_" + System.currentTimeMillis();
+            
+            CreatePreauthenticatedRequestDetails createFilePAR = CreatePreauthenticatedRequestDetails.builder()
+                    .name(filePARName)
+                    .objectName(fileName) // Specific to this file
+                    .accessType(CreatePreauthenticatedRequestDetails.AccessType.ObjectRead)
+                    .timeExpires(fileExpiryDate)
+                    .build();
 
-        CreatePreauthenticatedRequestRequest createPARrequest= CreatePreauthenticatedRequestRequest.builder()
-                .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
-                .bucketName(bucketName)
-                .createPreauthenticatedRequestDetails(createPAR)
-                .build();
+            CreatePreauthenticatedRequestRequest createFilePARRequest = CreatePreauthenticatedRequestRequest.builder()
+                    .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
+                    .bucketName(bucketName)
+                    .createPreauthenticatedRequestDetails(createFilePAR)
+                    .build();
 
-        CreatePreauthenticatedRequestResponse responsePAR= client.createPreauthenticatedRequest(createPARrequest);
-    }
-
-    @PostMapping("/api/bucketPAR")
-    public String getPAR(){
-        ListPreauthenticatedRequestsRequest listPAR = ListPreauthenticatedRequestsRequest.builder()
-                .namespaceName(client.getNamespace(GetNamespaceRequest.builder().build()).getValue())
-                .bucketName(bucketName)
-                .build();
-
-        ListPreauthenticatedRequestsResponse listPARresponse= client.listPreauthenticatedRequests(listPAR);
-        Optional<PreauthenticatedRequestSummary> mostRecentPAR = listPARresponse.getItems().stream()
-                .max(Comparator.comparing(PreauthenticatedRequestSummary::getTimeCreated));
-        PreauthenticatedRequestSummary par = mostRecentPAR.get();
-        if (listPARresponse.getItems().isEmpty()) {
-            System.out.println("No PARs found for bucket `"+bucketName+"`. Creating new PAR....\n");
-            createPAR();
-        }else {
-            Date expiryTime = par.getTimeExpires();
-
-            System.out.println("Most recent PAR found:");
-            System.out.println("Time created: " + par.getTimeCreated());
-            System.out.println("Time expired: " + expiryTime);
-            System.out.println("Current time: " + new Date());
-            System.out.println("-------------");
-
-            // Check if the PAR has expired
-            if (expiryTime.before(new Date())) {
-                System.out.println("This PAR has EXPIRED. You may need to create a new one.");
-                createPAR();
-            }
+            CreatePreauthenticatedRequestResponse responsePAR = client.createPreauthenticatedRequest(createFilePARRequest);
+            
+            // Return the full PAR URL for the specific file using hardcoded format
+            String region = provider.getRegion().getRegionId();
+            String accessUri = responsePAR.getPreauthenticatedRequest().getAccessUri();
+            String parUrl = String.format("https://objectstorage.%s.oraclecloud.com%s", region, accessUri);
+            
+            System.out.println("Created file-specific PAR URL for " + fileName + ": " + parUrl);
+            return parUrl;
+        } catch (Exception e) {
+            System.err.println("Error creating file PAR for " + fileName + ": " + e.getMessage());
+            return "Error creating PAR for file: " + fileName;
         }
-        return mostRecentPAR.get().toString();
+    }
+    
+    @GetMapping("/api/listMediaWithPARs")
+    public Map<String, String> listMediaWithPARs() {
+        Map<String, String> mediaWithPARs = new HashMap<>();
+        
+        try {
+            setBucket();
+            String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
+            ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
+                    .namespaceName(namespace)
+                    .bucketName(bucketName)
+                    .build();
+            osResponse = client.listObjects(listObjectsRequest);
+            
+            List<String> fileNames = osResponse.getListObjects().getObjects()
+                    .stream()
+                    .map(ObjectSummary::getName)
+                    .toList();
+            
+            // Create PAR for each file
+            for (String fileName : fileNames) {
+                try {
+                    String parUrl = createFilePAR(fileName);
+                    mediaWithPARs.put(fileName, parUrl);
+                } catch (Exception e) {
+                    System.err.println("Failed to create PAR for " + fileName + ": " + e.getMessage());
+                    mediaWithPARs.put(fileName, "Error creating PAR");
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error listing media with PARs: " + e.getMessage());
+        }
+        
+        return mediaWithPARs;
     }
 
     @GetMapping("/api/download")

@@ -41,13 +41,13 @@
                 <form id="downloadForm">
                     <label for="mediaFileName">Select media file to download:</label>
                     <select id="mediaFileName" name="mediaFileName" required>
-                        <option value="" disabled selected>Select a file</option>
-                        <!-- Add more options dynamically as needed -->
+                        <option value="">Select a file</option>
                     </select>
                     <br><br>
-                <button type="submit">Download</button>
+                    <button type="button" onclick="downloadViaPAR()">Download via file's PAR</button>
                 </form>
                 <div id="download-status"></div>
+                
             </div>
         </div>
         <script>
@@ -98,14 +98,51 @@
                 }
             }
             
-            // Providing PreAuthenticatedRequest (PAR)
-            async function providePAR() {
+            // Download file using PAR
+            async function downloadViaPAR() {
+                const fileSelect = document.getElementById('mediaFileName');
+                const fileName = fileSelect.value;
+                const downloadStatus = document.getElementById('download-status');
+                
+                if (!fileName) {
+                    downloadStatus.textContent = "Please select a file to download.";
+                    return;
+                }
+                
                 try {
-                    const res = await fetch("/api/bucketPAR", { method: "POST" });
-                    const data = await res.json();
-                    console.log("PreAuthenticatedRequest (PAR) provided:", data);
-                } catch (err) {
-                    console.error("Error providing PAR:", err);
+                    // Create a file-specific PAR
+                    const formData = new FormData();
+                    formData.append('fileName', fileName);
+                    
+                    const response = await fetch('/api/createFilePAR', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const parUrl = await response.text();
+                        
+                        // Open the PAR URL in a new tab for download
+                        const link = document.createElement('a');
+                        link.href = parUrl;
+                        link.target = '_blank';
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        downloadStatus.innerHTML = `
+                            <div style="color: green;">
+                                PAR download initiated! If download doesn't start automatically, 
+                                <a href="${parUrl}" target="_blank">click here</a>
+                            </div>
+                        `;
+                    } else {
+                        throw new Error('Failed to create file PAR with status ' + response.status);
+                    }
+                } catch (error) {
+                    downloadStatus.textContent = "PAR download failed: " + error.message;
+                    console.error('PAR download error:', error);
                 }
             }
 
@@ -144,40 +181,6 @@
                 }
             });
 
-            // Handling file downloads
-            document.getElementById('downloadForm').addEventListener('submit', async function (event) {
-                event.preventDefault();
-                const fileSelect = document.getElementById('mediaFileName');
-                const fileName = fileSelect.value;
-                const downloadStatus = document.getElementById('download-status');
-                
-                if (!fileName) {
-                    downloadStatus.textContent = "Please select a file to download.";
-                    return;
-                }
-            
-                try {
-                    const response = await fetch(`/api/download?fileName=${encodeURIComponent(fileName)}`);
-                    
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = fileName;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        downloadStatus.textContent = "Download started successfully!";
-                    } else {
-                        throw new Error('Download failed with status ' + response.status);
-                    }
-                } catch (error) {
-                    downloadStatus.textContent = "Download failed: " + error.message;
-                    console.error('Download error:', error);
-                }
-            });
 
             //list files before/after upload
             document.addEventListener("DOMContentLoaded", () => {
