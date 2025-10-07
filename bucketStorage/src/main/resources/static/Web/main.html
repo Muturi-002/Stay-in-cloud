@@ -6,15 +6,22 @@
         <title>Stay in Cloud: Main Page</title>
         <link rel="stylesheet" href="styles.css">
     </head>
+
     <body>
         <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
         <h1>Stay-in-Cloud: Media Page</h1>
         <br>
-        <button onclick="window.location.href='home.html'">Back to Homepage</button>
-        <br><br>
+
+        <nav>
+            <ul>
+                <li><button onclick="window.location.href='home.html'">Back to Homepage</button></li>
+            </ul>
+        </nav>
         <br>
+
         <button onclick="bucketInit()">Initialize Bucket</button>
         <br><br>
+
         <div class="media-upload-section">
             <h2>Upload Media</h2>
             <form id="uploadForm">
@@ -28,6 +35,7 @@
                 <!-- Upload status messages will appear here -->
             </div>
         </div>
+
         <div id="retrieve-media">
             <div class="list-media-in-storage">
                 <h2>Media in OS bucket</h2>
@@ -36,6 +44,7 @@
                     <!-- List of media files will be populated here -->
                 </ul>
             </div>
+
             <div class="media-download-section">
                 <h2>Download Media</h2>
                 <form id="downloadForm">
@@ -47,9 +56,9 @@
                     <button type="button" onclick="downloadViaPAR()">Download via file's PAR</button>
                 </form>
                 <div id="download-status"></div>
-                
             </div>
         </div>
+
         <script>
             // Initialize Bucket
             async function bucketInit() {
@@ -189,5 +198,6 @@
             });
         
         </script>
+        
     </body>
 </html>

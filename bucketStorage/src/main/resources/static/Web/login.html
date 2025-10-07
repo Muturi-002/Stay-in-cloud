@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Stay-in-Cloud Login page</title>
+        <link rel="stylesheet" href="styles.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    
+    <body>
+        <img src="Stay-in-cloud.png" alt="Stay-in-Cloud Logo">
+        <h1>Stay-in-Cloud Login Page</h1>
+        
+        <nav>
+            <ul>
+                <li><button onclick="window.location.href='home.html'">Home</button></li>
+                <li><button onclick="window.location.href='main.html'">Your Media</button></li>
+            </ul>
+        </nav>
+        
+        <div class="Account">
+
+            <form id="loginForm">
+                <p>Already have an account? Sign in right here.</p>
+                <h2>Sign In</h2>
+                <br>
+                <label for="username">Username:</label>
+                <input type="text" required id="uname" name="username">
+                <br>
+                <label for="password">Password:</label>
+                <input type="password" id="passwd" name="password" required>
+                <br>
+
+                <button type="submit">Login</button>
+            </form>
+
+            <form id="signupForm">
+                <p>Don't have a user account? Sign up right here.</p>
+                <h2>Sign Up</h2>
+                <br>
+                <label for="s-accountName">Account Name:</label>
+                <input type="text" id="s-accountName" name="s-accountName" required>
+                <br><br>
+                <label for="s-username">Your Username:</label>
+                <input type="text" id="s-uname" name="s-username" required>
+                <br>
+                <label for="s-password">Password:</label>
+                <input type="password" id="s-passwd" name="s-password" required>
+                <br>
+                <label for="confirm-passwd">Confirm password:</label>
+                <input type="password" id="confirm-passwd"
+                name="confirmation" required>
+                <br>
+
+                <button type="submit">Sign Up</button>
+            </form>
+
+        </div>
+
+    </body>
+</html>

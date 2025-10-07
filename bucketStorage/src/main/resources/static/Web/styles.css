@@ -12,7 +12,7 @@ h1 {
 body {
     font-family:Georgia, 'Times New Roman', Times, serif;
     margin:0;
-    padding:20px;
+    padding:10px;
 }
 nav {
     background-color: lightgoldenrodyellow;
@@ -42,15 +42,14 @@ img {
 }
 form {
     display: flex;
-    flex-direction:column;
-    gap: 3px;
-    align-items:center;   
+    flex-direction:column;   
+    align-items: center;
 }
 label {
     font-weight: bold;
     color: darkslategrey;
-    padding: 10px;
-    margin-right: 10px;
+    padding: 5px;
+    margin-right: 5px;
 }
 
 .media-upload-section {
@@ -84,34 +83,18 @@ label {
     margin: 5px;
 }
 
-.par-section {
-    margin-top: 20px;
-    padding: 15px;
-    border: 2px solid #007bff;
-    border-radius: 8px;
-    background-color: #f8f9fa;
+.Account{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    align-items: first baseline;
+    border-right: 5px solid lightgray;
 }
+#loginForm{
+    justify-content:left;
 
-.par-section h3 {
-    color: #007bff;
-    margin-top: 0;
 }
+#signupForm{
+    justify-content: right;
 
-.par-section button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 5px;
-}
-
-.par-section button:hover {
-    background-color: #0056b3;
-}
-
-#par-url-display input {
-    font-family: monospace;
-    font-size: 12px;
 }
