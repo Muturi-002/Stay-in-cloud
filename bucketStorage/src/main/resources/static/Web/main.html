@@ -15,10 +15,14 @@
         <nav>
             <ul>
                 <li><button onclick="window.location.href='home.html'">Back to Homepage</button></li>
+                <li><button onclick="logout()">Logout</button></li>
             </ul>
         </nav>
         <br>
 
+        <div id="Username">
+            <h2>Username: <span id="displayUsername">Not logged in</span></h2>
+        </div>
         <button onclick="bucketInit()">Initialize Bucket</button>
         <br><br>
 
@@ -31,6 +35,7 @@
                 <br><br>
                 <button type="submit">Upload</button>
             </form>
+
             <div id="upload-status">
                 <!-- Upload status messages will appear here -->
             </div>
@@ -191,8 +196,48 @@
             });
 
 
+            // Check authentication and display logged in username
+            function checkAuthenticationAndDisplayUser() {
+                // Check if user is authenticated using the function from login.html
+                if (typeof window.isUserAuthenticated === 'function' && window.isUserAuthenticated()) {
+                    const loggedInUser = localStorage.getItem('loggedInUser');
+                    const username = localStorage.getItem('username');
+                    const displayElement = document.getElementById('displayUsername');
+                    
+                    if (loggedInUser && username) {
+                        displayElement.textContent = `${loggedInUser} (${username})`;
+                    } 
+                } else {
+                    // If authentication functions are not available, check manually
+                    const isAuthenticated = localStorage.getItem('isAuthenticated');
+                    const loggedInUser = localStorage.getItem('loggedInUser');
+                    const username = localStorage.getItem('username');
+                    
+                    if (isAuthenticated === 'true' && loggedInUser && username) {
+                        const displayElement = document.getElementById('displayUsername');
+                        displayElement.textContent = `${loggedInUser} (${username})`;
+                    }
+                }
+            }
+            
+            
+            // Logout function that references the one from login.html
+            function logout() {
+                if (typeof window.logout === 'function') {
+                    window.logout();
+                } else {
+                    // Fallback logout
+                    localStorage.removeItem('loggedInUser');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('isAuthenticated');
+                    alert('You have been logged out successfully.');
+                    window.location.href = 'login.html';
+                }
+            }
+
             //list files before/after upload
             document.addEventListener("DOMContentLoaded", () => {
+                checkAuthenticationAndDisplayUser();
                 bucketInit();
                 loadMediaList();
             });

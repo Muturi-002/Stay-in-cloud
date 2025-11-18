@@ -6,6 +6,7 @@ import com.oracle.bmc.objectstorage.ObjectStorageClient;
 import com.oracle.bmc.objectstorage.model.*;
 import com.oracle.bmc.objectstorage.requests.*;
 import com.oracle.bmc.objectstorage.responses.*;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -15,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -29,11 +29,7 @@ public class SDK implements CommandLineRunner {
     static ConfigFileAuthenticationDetailsProvider provider;
     static ObjectStorageClient client;
     static ListObjectsResponse osResponse;
-
     static String bucketPAR= bucketName+"PAR";
-    //Checking most recent PAR expiry
-    static Calendar calendar = Calendar.getInstance();
-    static Date expiryDate ;
 
     // Initialize
     @Override
@@ -41,7 +37,7 @@ public class SDK implements CommandLineRunner {
         // Load auth provider from default OCI config file (~/.oci/config). Eases connection to OCI services by using already set credentials.
         provider = new ConfigFileAuthenticationDetailsProvider("~/.oci/config", "DEFAULT");
 
-        // Create Object Client
+        // Create ObjectStorage Client
         client =  ObjectStorageClient.builder().build(provider);
         client.setRegion(provider.getRegion());
 
@@ -111,24 +107,6 @@ public class SDK implements CommandLineRunner {
                 .stream()
                 .map(ObjectSummary::getName)
                 .toList();
-    }
-
-    private static void deleteObjects(){
-        // Delete objects from the bucket
-        String namespace = client.getNamespace(GetNamespaceRequest.builder().build()).getValue();
-        String objectName = "slim.txt"; // Name of the object to be deleted
-        if (osResponse.getListObjects().getObjects().stream()
-                .anyMatch(object -> object.getName().equals(objectName))){
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .namespaceName(namespace)
-                    .bucketName(bucketName)
-                    .objectName(objectName)
-                    .build();
-            client.deleteObject(deleteObjectRequest);
-            System.out.println("Object '" + objectName + "' has been deleted from bucket '" + bucketName + "'.");
-        }else {
-            System.out.println("Object '" + objectName + "' does not exist in bucket '" + bucketName + "'.");
-        }
     }
 
     // Create a PAR for a specific file
@@ -229,5 +207,7 @@ public class SDK implements CommandLineRunner {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
 
 }

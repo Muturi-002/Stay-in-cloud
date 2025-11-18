@@ -28,6 +28,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+    <!-- Spring boot dependencies -->
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -31,7 +31,7 @@
                 <input type="password" id="passwd" name="password" required>
                 <br>
 
-                <button type="submit">Login</button>
+                <button type="button" onclick="login()">Login</button>
             </form>
 
             <form id="signupForm">
@@ -52,10 +52,164 @@
                 name="confirmation" required>
                 <br>
 
-                <button type="submit">Sign Up</button>
+                <button onclick="signUp()" type="button">Sign Up</button>
             </form>
 
         </div>
 
     </body>
+
+    <script>
+        // Check if user is already logged in when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+
+        function checkLoginStatus() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            const username = localStorage.getItem('username');
+            
+            // Check if user is already logged in
+            if (loggedInUser && username) {
+                // User is still logged in, show option to continue or logout
+                const continueSession = confirm(`You are already logged in as ${loggedInUser}. Do you want to continue to your media page?`);
+                if (continueSession) {
+                    window.location.href = 'main.html';
+                    return;
+                } else {
+                    // Clear session if user chooses not to continue
+                    clearLoginSession();
+                }
+            }
+        }
+
+        function clearLoginSession() {
+            localStorage.removeItem('loggedInUser');
+            localStorage.removeItem('username');
+            localStorage.removeItem('isAuthenticated');
+        }
+
+        async function signUp(){
+            // Get form data
+            const accountName = document.getElementById('s-accountName').value;
+            const username = document.getElementById('s-uname').value;
+            const password = document.getElementById('s-passwd').value;
+            const confirmPassword = document.getElementById('confirm-passwd').value;
+
+            // Validate form data
+            if (!accountName || !username || !password || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Ensure your password matches the one on "Confirm Password"');
+                return;
+            }
+
+            try {
+                // Send signup request to backend
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        accountName: accountName,
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    alert('Account created successfully! You can now log in.');
+                    // Clear the signup form
+                    document.getElementById('signupForm').reset();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error during signup:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        async function login(){
+            // Get form data
+            const username = document.getElementById('uname').value;
+            const password = document.getElementById('passwd').value;
+
+            // Validate form data
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+
+            try {
+                // Send login request to backend
+                const response = await fetch('/api/login', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Store user info and session details
+                    localStorage.setItem('loggedInUser', result.accountName);
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('isAuthenticated', 'true');
+                    
+                    // Clear the login form for security
+                    document.getElementById('loginForm').reset();
+                    
+                    alert('Login successful! Welcome, ' + result.accountName);
+                    
+                    // Redirect to main page
+                    window.location.href = 'main.html';
+                } else {
+                    alert('Error: ' + result.message);
+                    // Clear password field on failed login
+                    document.getElementById('passwd').value = '';
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert('Network error. Please try again.');
+                // Clear password field on network error
+                document.getElementById('passwd').value = '';
+            }
+        }
+
+        // Logout function (can be called from other pages)
+        function logout() {
+            clearLoginSession();
+            alert('You have been logged out successfully.');
+            window.location.href = 'login.html';
+        }
+
+        // Make logout function globally available
+        window.logout = logout;
+        
+        // Function to check if user is authenticated (can be called from other pages)
+        function isUserAuthenticated() {
+            const isAuthenticated = localStorage.getItem('isAuthenticated');
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            const username = localStorage.getItem('username');
+            
+            return isAuthenticated === 'true' && loggedInUser && username;
+        }
+
+        // Make authentication check globally available
+        window.isUserAuthenticated = isUserAuthenticated;
+        window.clearLoginSession = clearLoginSession;
+    </script>
+
 </html>
